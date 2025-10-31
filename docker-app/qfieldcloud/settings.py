@@ -842,7 +842,7 @@ JAZZMIN_SETTINGS = {
     # Site header title (max 19 chars). Defaults to  `current_admin_site.site_header` if empty.
     "site_header": "QFieldCloud",
     # Brand name (max 19 chars). Defaults to  `current_admin_site.site_header` if empty.
-    "site_brand": "QFieldCloud admin",
+    "site_brand": "(DEV) Surveillance",
     # Favicon filename. Defaults to `site_logo` if empty.
     "site_icon": "favicon.ico",
     # Logo filename.
