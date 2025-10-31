@@ -12,8 +12,6 @@ services:
       # mount the source for live reload
       - ./docker-app/qfieldcloud:/usr/src/app/qfieldcloud
     command: python3 -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000
-    depends_on:
-      - db
 
   pipcompile: &default-django
     build:
@@ -26,22 +24,6 @@ services:
       # mount the source for live reload
       - ./docker-app/requirements:/requirements
     command: bash -c 'for f in /requirements/*.in; do pip-compile --no-strip-extras -o "$${f%.in}.txt" "$$f"; done'
-
-  worker_wrapper:
-    scale: ${QFIELDCLOUD_WORKER_REPLICAS}
-    build:
-      args:
-        - DEBUG_BUILD=1
-    ports:
-      - ${DEBUG_DEBUGPY_WORKER_WRAPPER_PORT:-5679}:5679
-    environment:
-      QFIELDCLOUD_LIBQFIELDSYNC_VOLUME_PATH: ${QFIELDCLOUD_LIBQFIELDSYNC_VOLUME_PATH}
-      QFIELDCLOUD_QFIELDCLOUD_SDK_VOLUME_PATH: ${QFIELDCLOUD_QFIELDCLOUD_SDK_VOLUME_PATH}
-    volumes:
-      # mount the source for live reload
-      - ./docker-app/qfieldcloud:/usr/src/app/qfieldcloud
-      - ./docker-app/worker_wrapper:/usr/src/app/worker_wrapper
-    command: python3 -m debugpy --listen 0.0.0.0:5679 manage.py dequeue
 
   memcached:
     ports:
@@ -56,3 +38,43 @@ services:
       - ./docker-qgis/libqfieldsync:/libqfieldsync:ro
       # allow local development for `qfieldcloud-sdk-python` if host directory present; requires `PYTHONPATH=/qfieldcloud-sdk-python:${PYTHONPATH}`
       - ./docker-qgis/qfieldcloud-sdk-python:/qfieldcloud-sdk-python:ro
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-18T16-25-55Z
+    restart: unless-stopped
+    volumes:
+      - /mnt/surenvsa/surenvfs/minio/data:/data
+    # - /mnt/surenvsa/surenvfs2/minio/data2:/data2
+    # - /mnt/surenvsa/surenvfs3/minio/data3:/data3
+    # - /mnt/surenvsa/surenvfs4/minio/data4:/data4
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: http://${QFIELDCLOUD_HOST}:${MINIO_BROWSER_PORT}
+    command: server /data --console-address :9001
+    healthcheck:
+      test: [ "CMD", "curl", "-A", "Mozilla/5.0 (X11; Linux x86_64; rv:30.0) Gecko/20100101 Firefox/30.0", "-f", "${STORAGE_ENDPOINT_URL}/minio/index.html" ]
+      interval: 5s
+      timeout: 20s
+      retries: 5
+    ports:
+      - ${MINIO_BROWSER_PORT}:9001
+      - ${MINIO_API_PORT}:9000
+
+  createbuckets:
+    build:
+      context: ./docker-createbuckets
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      STORAGES: ${STORAGES}
+
+volumes:
+  postgres_data:
+  minio_data1:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/surenvsa/surenvfs/minio/data
