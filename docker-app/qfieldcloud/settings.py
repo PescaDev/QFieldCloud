@@ -375,7 +375,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "qfieldcloud.core.rest_utils.exception_handler",
 }
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 
 SITE_ID = 1
 
@@ -616,6 +616,11 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 
+# MS Graph email backend configuration     
+MSGRAPH_TENANT_ID = os.environ.get("MSGRAPH_TENANT_ID", "")
+MSGRAPH_CLIENT_ID = os.environ.get("MSGRAPH_CLIENT_ID", "")                                                                                                   
+MSGRAPH_CLIENT_SECRET = os.environ.get("MSGRAPH_CLIENT_SECRET", "")
+MSGRAPH_USER_ID = os.environ.get("MSGRAPH_USER_ID", "")
 
 # Django invitations configurations
 # https://github.com/bee-keeper/django-invitations#additional-configuration

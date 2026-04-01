@@ -62,6 +62,11 @@ services:
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      EMAIL_BACKEND: ${EMAIL_BACKEND}
+      MSGRAPH_TENANT_ID: ${MSGRAPH_TENANT_ID}
+      MSGRAPH_CLIENT_ID: ${MSGRAPH_CLIENT_ID}
+      MSGRAPH_CLIENT_SECRET: ${MSGRAPH_CLIENT_SECRET}
+      MSGRAPH_USER_ID: ${MSGRAPH_USER_ID}
       # Settings below are specific to worker_wrapper
       # TODO : move this to the worker_wrapper service and keep things DRY (yaml syntax expert needed)
       TMP_DIRECTORY: ${TMP_DIRECTORY}
